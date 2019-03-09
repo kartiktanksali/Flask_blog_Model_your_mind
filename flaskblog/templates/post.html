@@ -1,15 +1,25 @@
 {% extends "layout.html" %}
 {% block content %}
+{% if post.approve_flag==True or current_user.username == "admin@admin.com" or post.user_id == current_user.id %}
 		<article class="media content-section">
       <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pictures/'+ post.author.user_image) }}" />
   			<div class="media-body">
     			<div class="article-metadata">
       				<a class="mr-2" href="{{ url_for('users.user_post',username=post.author.username)}}">{{ post.author.username }}</a>
       				<small class="text-muted">{{ post.date_posted.strftime('%m-%d-%Y') }}</small>
-              {% if post.author == current_user %}
+              {% if current_user.username == "admin@admin.com" or post.user_id == current_user.id %}
+              <small class="text-muted">Post Status:{% if post.approve_flag==True %} Approved {% else %} Not Approved {% endif %}</small>
+              {% endif %}
+              {% if post.author == current_user or current_user.username == "admin@admin.com" %}
                 <div> 
                   <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('posts.update_post', post_id=post.id) }}">Edit</a>
-                  <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>  
+                  <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
+                  {% if current_user.username=="admin@admin.com" and post.approve_flag==True %}
+                   <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#disapproveModal">Disapprove</button>
+                  {% endif %}
+                  {% if current_user.username == "admin@admin.com" and post.approve_flag==False %}
+                  <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#approveModal">Approve</button>  
+                  {% endif %}
                 </div>
 
               {% endif %}
@@ -18,8 +28,9 @@
     			<p class="article-content">{{ post.content|safe }}</p>
   			</div>
 		</article>
+{% endif %}
     
-    <!-- Modal -->
+<!-- Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -37,6 +48,56 @@
         <form action="{{ url_for('posts.delete_post', post_id=post.id) }}" method="POST"> 
 
           <input type="submit" class="btn-danger" value="Delete">
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Approve Post</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure want to approve the post?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <form action="{{ url_for('posts.approve_post', post_id=post.id) }}" method="POST"> 
+
+          <input type="submit" class="btn-danger" value="Approve">
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Disapprove Modal -->
+<div class="modal fade" id="disapproveModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Approve Post</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure want to disapprove the post?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <form action="{{ url_for('posts.disapprove_post', post_id=post.id) }}" method="POST"> 
+
+          <input type="submit" class="btn-danger" value="Disapprove">
 
         </form>
       </div>
